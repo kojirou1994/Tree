@@ -1,44 +1,42 @@
-public struct FileEntry {
-  internal init(name: String, depth: TreeDepth) {
+public struct FileEntry<Info> {
+  internal init(name: String, depth: TreeDepth, info: Info?) {
     self.name = name
     self.depth = depth
+    self.info = info
   }
 
-  public init(rootName: String) {
+  public init(rootName: String, info: Info? = ()) {
     self.name = rootName
     self.depth = .root
+    self.info = info
   }
 
   public let name: String
   public let depth: TreeDepth
+  public let info: Info?
 
   public private(set) var children: [Self] = []
 
-  mutating func insert(name: String) -> Int {
-    let child = Self(name: name, depth: depth.deeper)
-    if children.isEmpty {
-      children.append(child)
-      return 0
+  mutating func insert(name: String, info: Info?) -> Int {
+    if let index = children.firstIndex(where: { $0.name == name }) {
+      return index
     } else {
-      if let index = children.firstIndex(where: { $0.name == name }) {
-        return index
-      } else {
-        children.append(child)
-        return children.count-1
-      }
+      let child = Self(name: name, depth: depth.deeper, info: info)
+      children.append(child)
+      return children.count-1
     }
   }
 
-  public mutating func append(path: String) {
-    append(pathComponents: path.split(separator: "/"))
+  public mutating func append(path: String, info: Info? = ()) {
+    append(pathComponents: path.split(separator: "/"), info: info)
   }
 
-  public mutating func append(pathComponents parts: some Collection<Substring>) {
+  public mutating func append(pathComponents parts: some Collection<Substring>, info: Info? = ()) {
     assert(!parts.isEmpty)
 
-    let newIndex = insert(name: String(parts[parts.startIndex]))
+    let newIndex = insert(name: String(parts[parts.startIndex]), info: parts.count == 1 ? info : nil)
     if parts.count > 1 {
-      children[newIndex].append(pathComponents: parts.dropFirst())
+      children[newIndex].append(pathComponents: parts.dropFirst(), info: info)
     }
   }
 
