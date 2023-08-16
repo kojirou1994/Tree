@@ -10,6 +10,7 @@ let package = Package(
   dependencies: [
   ],
   targets: [
+    .executableTarget(name: "ls-tree", dependencies: ["Tree"]),
     .target(
       name: "Tree",
       dependencies: []),
